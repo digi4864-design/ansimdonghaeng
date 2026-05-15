@@ -1,0 +1,191 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum UserRole {
+  ELDER
+  GUARDIAN
+  MANAGER
+  ADMIN
+}
+
+enum ManagerStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+}
+
+enum BookingStatus {
+  PENDING
+  MATCHED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum BookingStep {
+  DEPARTED
+  ARRIVED_HOSPITAL
+  IN_TREATMENT
+  TREATMENT_DONE
+  RETURNING
+  COMPLETED
+}
+
+enum TransportMode {
+  TAXI
+  MANAGER_CAR
+  PUBLIC_TRANSIT
+  WALKING
+}
+
+enum CertType {
+  NURSING_ASSISTANT
+  NURSE
+  CARE_WORKER
+  OTHER
+}
+
+model User {
+  id              String    @id @default(cuid())
+  role            UserRole
+  name            String
+  phone           String    @unique
+  email           String?   @unique
+  passwordHash    String?
+  profileImageUrl String?
+  socialProvider  String?
+  socialId        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  elder    Elder?
+  guardian Guardian?
+  manager  Manager?
+
+  @@index([phone])
+  @@index([socialProvider, socialId])
+}
+
+model Elder {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id])
+  birthYear       Int
+  address         String
+  medicalNote     String?
+  needsWheelchair Boolean   @default(false)
+  guardianId      String?
+  guardian        Guardian? @relation(fields: [guardianId], references: [id])
+
+  bookings Booking[]
+}
+
+model Guardian {
+  id     String  @id @default(cuid())
+  userId String  @unique
+  user   User    @relation(fields: [userId], references: [id])
+  elders Elder[]
+}
+
+model Manager {
+  id           String        @id @default(cuid())
+  userId       String        @unique
+  user         User          @relation(fields: [userId], references: [id])
+  bio          String        @default("")
+  serviceAreas String  @default("[]")
+  rating       Float         @default(0)
+  reviewCount  Int           @default(0)
+  status       ManagerStatus @default(PENDING)
+
+  certifications Certification[]
+  availableHours AvailableHour[]
+  bookings       Booking[]
+  reviews        Review[]
+  reports        TreatmentReport[]
+}
+
+model Certification {
+  id        String   @id @default(cuid())
+  managerId String
+  manager   Manager  @relation(fields: [managerId], references: [id])
+  type      CertType
+  name      String
+  issuedBy  String
+  issuedAt  DateTime
+  fileUrl   String?
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model AvailableHour {
+  id        String  @id @default(cuid())
+  managerId String
+  manager   Manager @relation(fields: [managerId], references: [id])
+  dayOfWeek Int
+  startHour Int
+  endHour   Int
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  elderId         String
+  elder           Elder         @relation(fields: [elderId], references: [id])
+  managerId       String?
+  manager         Manager?      @relation(fields: [managerId], references: [id])
+  status          BookingStatus @default(PENDING)
+  currentStep     BookingStep?
+  hospitalName    String
+  hospitalAddress String
+  scheduledAt     DateTime
+  estimatedHours  Int
+  symptoms        String?
+  needsWheelchair Boolean       @default(false)
+  specialNote     String?
+  price           Int
+  platformFee     Int
+  managerPayout   Int
+  transportMode   TransportMode @default(WALKING)
+  transportCost   Int?
+  distanceKm      Float?
+  transportTotal  Int           @default(0)
+
+  report  TreatmentReport?
+  reviews Review[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([elderId])
+  @@index([managerId])
+  @@index([scheduledAt])
+}
+
+model TreatmentReport {
+  id                 String    @id @default(cuid())
+  bookingId          String    @unique
+  booking            Booking   @relation(fields: [bookingId], references: [id])
+  managerId          String
+  manager            Manager   @relation(fields: [managerId], references: [id])
+  summary            String
+  nextAppointment    DateTime?
+  medications        String?
+  doctorInstructions String?
+  createdAt          DateTime  @default(now())
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  bookingId  String   @unique
+  booking    Booking  @relation(fields: [bookingId], references: [id])
+  reviewerId String
+  managerId  String
+  manager    Manager  @relation(fields: [managerId], references: [id])
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+}

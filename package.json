@@ -1,0 +1,28 @@
+{
+  "name": "ansim-donghang",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "turbo test"
+  },
+  "devDependencies": {
+    "prettier": "^3.0.0",
+    "turbo": "^2.0.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@react-navigation/stack": "^7.9.1",
+    "expo-location": "^19.0.8",
+    "react-native-safe-area-context": "^5.6.0",
+    "react-native-screens": "^4.16.0"
+  }
+}
