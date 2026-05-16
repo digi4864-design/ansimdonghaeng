@@ -33,6 +33,7 @@ export function BookingDetailScreen({ route, navigation }: any) {
   const { data: booking, isLoading } = useQuery({
     queryKey: ['booking', id],
     queryFn: () => api.get(`/bookings/${id}`).then((r) => r.data),
+    refetchOnMount: 'always',
   })
 
   const applyMutation = useMutation({
@@ -83,7 +84,7 @@ export function BookingDetailScreen({ route, navigation }: any) {
   const alreadyHasTransport = booking.transportTotal > 0 || transportSubmitted
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
       <View style={styles.card}>
         <Text style={styles.hospital}>{booking.hospitalName}</Text>
         <Text style={styles.address}>{booking.hospitalAddress}</Text>

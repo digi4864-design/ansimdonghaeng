@@ -29,6 +29,12 @@ export class BookingsController {
     return this.bookingsService.findAvailableForManager(user.id)
   }
 
+  @Get('my-jobs')
+  @Roles('MANAGER')
+  myJobs(@CurrentUser() user: User) {
+    return this.bookingsService.findMyJobsForManager(user.id)
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.bookingsService.findById(id)
