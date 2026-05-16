@@ -92,6 +92,15 @@ export class BookingsService {
     })
   }
 
+  async findMyJobsForManager(userId: string) {
+    const managerId = await this.getManagerIdByUserId(userId)
+    return this.prisma.booking.findMany({
+      where: { managerId, status: { in: [BookingStatus.MATCHED, BookingStatus.IN_PROGRESS, BookingStatus.COMPLETED] } },
+      include: { elder: { include: { user: true } }, report: true },
+      orderBy: { scheduledAt: 'desc' },
+    })
+  }
+
   async applyAsManager(bookingId: string, userId: string) {
     const managerId = await this.getManagerIdByUserId(userId)
     const booking = await this.prisma.booking.findUnique({ where: { id: bookingId } })
